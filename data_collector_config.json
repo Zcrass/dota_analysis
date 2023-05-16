@@ -1,0 +1,13 @@
+{
+    "matchs_api":{
+            "api_name":"publicMatches",
+            "api_url":"https://api.opendota.com/api/publicMatches",
+            "api_get_wait_time":30,
+            "api_get_uptime":6000,
+            "db_name":"dota_db.sqlite",
+            "db_table_name":"publicMatches",
+            "db_sumbmission_time":60
+        },
+    "max_attemps":5,
+    "sleep_time":10
+}
