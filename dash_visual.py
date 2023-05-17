@@ -23,7 +23,8 @@ def main():
                           style={'width': '50%', 'display': 'inline-block'}),                
             ]),
             html.Div([
-                dcc.Graph(figure=dota_plots.heroes_heatmap(data)),
+                dcc.Graph(figure=dota_plots.heroes_heatmap(data),
+                          style={'width': '100%', 'display': 'inline-block'}),
 
             ])
         ]

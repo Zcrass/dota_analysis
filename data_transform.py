@@ -2,10 +2,9 @@
 
 import json
 import logging as lg
-import pandas as pd 
 import sys
 import time
-from data_transform_utils import DotaData, TeamsData
+from dota_utils import DotaData, TeamsData
 
 def main():
     data = DotaData(**args['matchs_api'])

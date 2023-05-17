@@ -25,9 +25,14 @@ def duration_box(data):
     return box
 
 def heroes_heatmap(data):
-    # heroes_mat = plot_utils.heroes_matrix(data, 'radiant')
-    # heatmap = px.imshow(heroes_mat)
-    # heatmap.layout.width = 500
-    heroes_df = data.hbym_data
-    heatmap = px.imshow(heroes_df)
+    heroes_df = plot_utils.heroes_df(data, 'both')
+    heroes_df = heroes_df.sort_values(by='localized_name')
+    heroes_df = heroes_df.set_index('localized_name')
+    heatmap = px.imshow(heroes_df, aspect='auto')
+    heatmap.layout.height = 2000
+    heatmap.update_layout(showlegend=False)
+    heatmap.update_coloraxes(showscale=False)
+
+    # heroes_df = data.hbym_data
+    # heatmap = px.imshow(heroes_df)
     return heatmap

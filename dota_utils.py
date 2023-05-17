@@ -79,20 +79,21 @@ class TeamsData():
             logger.error(f'Connection to {self.db_name} fail!') 
             
 class plot_utils():
-
-    def heroes_matrix(data, team):
+    
+    def heroes_df(data, team):
         if team == 'radiant':
-            team = '1'
+                team = '1'
         elif team == 'dire':
-            team = '-1'
+                team = '-1'
         ### get total number of matches by rank
         total_matches = {}
-        mat = []
+        df = data.heroes_data[['id', 'localized_name']]
+        df = df.set_index('id')
         for rank in range(1,9):
             total_matches[rank] = data.match_data.loc[data.match_data['num_mmr'] == rank].shape[0]
-        ### get list of lists
+            df[str(rank)] = 0
         for hero_id in data.heroes_data.id:
-            ### identify matches where hero apear in both radiant or dire teams
+            ### identify matches where hero apear in either both or radiant/dire teams
             if team == 'both':
                 heroe_matches_id = list(data.hbym_data.loc[data.hbym_data[str(hero_id)] != '0']['match_id'])
             else:
@@ -101,8 +102,10 @@ class plot_utils():
             ### extract data from matches with the heroe in each team
             heroe_matches_data = data.match_data[data.match_data['match_id'].isin(heroe_matches_id)]
             ### iterate by rank levels
-            hero_list = []
             for rank in range(1,9):
-                hero_list += [heroe_matches_data.loc[heroe_matches_data.num_mmr == rank].shape[0]/total_matches[rank]]
-            mat = mat + [hero_list]
-        return(mat)
+                hero_count = heroe_matches_data.loc[heroe_matches_data.num_mmr == rank].shape[0]/total_matches[rank]
+                df.at[hero_id, str(rank)] = hero_count
+        return df
+            
+
+
