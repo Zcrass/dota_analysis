@@ -5,8 +5,8 @@ import json
 import logging as lg
 import sys
 
-from dota_utils import DotaData 
-import dota_plots 
+from utils.dota_data_utils import DotaData 
+import utils.dota_plots_utils as dota_plots_utils 
 def main():
     data = DotaData(**args['matchs_api'])
     app = Dash(__name__)
@@ -17,15 +17,15 @@ def main():
             html.P(children=(f'Data was collected from the Open Dota API')),
             html.H2('Matches duration by mmr rank'),
             html.Div([
-                dcc.Graph(figure=dota_plots.duration_hist(data), 
+                dcc.Graph(figure=dota_plots_utils.duration_hist(data), 
                           style={'width': '50%', 'display': 'inline-block'}),
-                dcc.Graph(figure=dota_plots.duration_box(data), 
+                dcc.Graph(figure=dota_plots_utils.duration_box(data), 
                           style={'width': '50%', 'display': 'inline-block'}),                
             ]),
             html.Div([
-                dcc.Graph(figure=dota_plots.heroes_heatmap(data),
+                dcc.Graph(figure=dota_plots_utils.heroes_heatmap(data),
                           style={'width': '50%', 'display': 'inline-block'}),
-                dcc.Graph(figure=dota_plots.heroes_wlr_heatmap(data),
+                dcc.Graph(figure=dota_plots_utils.heroes_wlr_heatmap(data),
                           style={'width': '50%', 'display': 'inline-block'}),
             ])
         ]
@@ -34,7 +34,7 @@ def main():
 
 if __name__ == '__main__':
     ### define logger
-    lg.basicConfig(filename='dash_visual.log', filemode='w',
+    lg.basicConfig(filename='logs/dash_visual.log', filemode='w',
                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=lg.INFO)
     logger = lg.getLogger()
     stdout_handler = lg.StreamHandler(sys.stdout)

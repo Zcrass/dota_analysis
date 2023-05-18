@@ -6,12 +6,12 @@ import sys
 import time
 import pandas as pd 
 
-from data_collector_utils import DataCollector, TeamsData
-from dota_utils import DotaData 
+from utils.data_collector_utils import DataCollector, TeamsData
+from utils.dota_data_utils import DotaData 
 def main():
     data_colector_options = args['data_collector']
-    print(data_colector_options)
     if data_colector_options['collect_data'] == 'True':
+        logger.info(f'Collecting Dota 2 data')
         logger.info(f'Starting service')
         matches = DataCollector(**args['matchs_api'])
         matches.stored_matches = matches.get_matches_db()
@@ -32,7 +32,8 @@ def main():
                 matches.submit_data()
                 matches.new_data = pd.DataFrame()
             #     submittime = time.time()
-    if data_colector_options['update_data'] == 'True':    
+    if data_colector_options['update_data'] == 'True':  
+        logger.info(f'Updating Dota 2 data')  
         data = DotaData(**args['matchs_api'])
         stored_hbym = data.hbym_data_stored_matches
         stored_match = data.match_data_stored_matches
@@ -51,11 +52,13 @@ def main():
                     t_data.combined_teams[i] = t_data.combined_teams[i].astype(int) 
                 logger.info(f'submiting match {n+1}/{len(missing)}...')
                 t_data.submit_data()
+        else:
+            logger.info(f'all records from {data.db_match_table} are stored in {data.db_heroesbymatch_table}')
 
 
 if __name__ == '__main__':
     ### define logger
-    lg.basicConfig(filename='data_collector.log', filemode='w',
+    lg.basicConfig(filename='logs/data_collector.log', filemode='w',
                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=lg.INFO)
     logger = lg.getLogger()
     stdout_handler = lg.StreamHandler(sys.stdout)

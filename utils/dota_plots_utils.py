@@ -1,6 +1,7 @@
 import plotly.express as px  
 
-from dota_utils import utils
+from utils.dota_data_utils import utils
+from utils.dota_analytics_utils import utils
 
 def duration_hist(data):
     data = data.match_data[['duration', 'dota rank']]

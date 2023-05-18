@@ -1,6 +1,6 @@
 {
     "data_collector":{
-            "collect_data":"False",
+            "collect_data":"True",
             "update_data":"True",
             "api_name":"publicMatches",
             "api_url":"https://api.opendota.com/api/publicMatches",
