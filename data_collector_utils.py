@@ -66,4 +66,44 @@ class DataCollector():
         except:
             logger.error(f'Connection to {self.db_name} fail!') 
             
-            
+class TeamsData():
+    def __init__(self, dota_data, match_id):
+        self.match_id = match_id
+        self.db_name = dota_data.db_name
+        self.db_table_hbym = dota_data.db_heroesbymatch_table
+        self.radiant = dota_data.match_data.loc[dota_data.match_data['match_id'] == match_id, 'radiant_team']
+        self.dire = dota_data.match_data.loc[dota_data.match_data['match_id'] == match_id, 'dire_team']
+        self.combined_teams = self.comb_teams(dota_data)
+        
+    def comb_teams(self, dota_data):
+        combined_teams = pd.DataFrame(columns=dota_data.hbym_data.columns)
+        for rad_hero in self.heroes2list(self.radiant.values):
+            combined_teams.at[self.match_id, rad_hero] = 1
+        for dire_hero in self.heroes2list(self.dire.values):
+            combined_teams.at[self.match_id, dire_hero] = -1
+        combined_teams.match_id = self.match_id
+        combined_teams = combined_teams.fillna(0)
+        return combined_teams
+    
+    def heroes2list(self, heroes):
+        heroes_list = str(heroes)
+        heroes_list = heroes_list.replace('[', '').replace(']', '').replace("'", '').split(',')
+        return heroes_list
+    
+    def submit_data(self):
+        '''
+        Function that submits data into db
+        '''
+        try:
+            logger.info(f'Connecting to db {self.db_name}')
+            connection=sqlite3.connect(self.db_name)
+            try:
+                logger.info(f'Submiting data to {self.db_table_hbym}')
+                self.combined_teams.to_sql(name=self.db_table_hbym, con=connection, if_exists='append', index=False)
+            except:
+                logger.error(f'Submission to table {self.db_table_hbym} fail!')
+            else:
+                logger.info(f'Submited data from match {self.match_id} into table {self.db_table_hbym} succesfully!')
+        except:
+            logger.error(f'Connection to {self.db_name} fail!') 
+    

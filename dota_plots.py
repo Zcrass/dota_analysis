@@ -1,38 +1,40 @@
 import plotly.express as px  
 
-from dota_utils import plot_utils
-
-# class DotaPlots():
-#     def __init__(self):
-
-#         pass
+from dota_utils import utils
 
 def duration_hist(data):
-    df = data.match_data[['duration', 'num_mmr']]
-    df['mmr rank'] = df['num_mmr']
-    df['duration(min)'] = df['duration']/60
-    df = df.sort_values(by='num_mmr')
-    hist = px.histogram(df, x="duration(min)", color="mmr rank")
+    data = data.match_data[['duration', 'dota rank']]
+    data = data.copy()
+    data['duration(min)'] = data['duration']/60
+    data = data.sort_values(by='dota rank')
+    hist = px.histogram(data, x="duration(min)", color="dota rank")
     return hist
 
 def duration_box(data):
-    df = data.match_data[['duration', 'num_mmr']]
-    df['mmr rank'] = df['num_mmr']
-    df['duration(min)'] = df['duration']/60
-    df = df.sort_values(by='num_mmr')
-    box = px.box(df, x='mmr rank', y="duration(min)", color="mmr rank")
+    data = data.match_data[['duration', 'dota rank']]
+    data = data.copy()
+    data['duration(min)'] = data['duration']/60
+    data = data.sort_values(by='dota rank')
+    box = px.box(data, x='dota rank', y="duration(min)", color="dota rank")
     box.update_layout(showlegend=False)
     return box
 
 def heroes_heatmap(data):
-    heroes_df = plot_utils.heroes_df(data, 'both')
+    heroes_df = utils.heroes_pick_df(data, 'both')
     heroes_df = heroes_df.sort_values(by='localized_name')
     heroes_df = heroes_df.set_index('localized_name')
     heatmap = px.imshow(heroes_df, aspect='auto')
     heatmap.layout.height = 2000
     heatmap.update_layout(showlegend=False)
     heatmap.update_coloraxes(showscale=False)
-
-    # heroes_df = data.hbym_data
-    # heatmap = px.imshow(heroes_df)
     return heatmap
+
+def heroes_wlr_heatmap(data):
+    heroes_df = utils.heroes_wlr_by_rank(data)
+    heroes_df = heroes_df.sort_values(by='localized_name')
+    heroes_df = heroes_df.set_index('localized_name')
+    heatmap = px.imshow(heroes_df, aspect='auto')
+    heatmap.layout.height = 2000
+    heatmap.update_layout(showlegend=False)
+    heatmap.update_coloraxes(showscale=False)
+    return heatmap 
