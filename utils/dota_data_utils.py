@@ -51,74 +51,33 @@ class DotaData():
             df.loc[df['match_id'].isin(rank_matches), 'dota rank'] = r
         return df['dota rank']
     
-# class TeamsData():
-#     def __init__(self, dota_data, match_id):
-#         self.match_id = match_id
-#         self.db_name = dota_data.db_name
-#         self.db_table_hbym = dota_data.db_heroesbymatch_table
-#         self.radiant = dota_data.match_data.loc[dota_data.match_data['match_id'] == match_id, 'radiant_team']
-#         self.dire = dota_data.match_data.loc[dota_data.match_data['match_id'] == match_id, 'dire_team']
-#         self.combined_teams = self.comb_teams(dota_data)
-        
-#     def comb_teams(self, dota_data):
-#         combined_teams = pd.DataFrame(columns=dota_data.hbym_data.columns)
-#         for rad_hero in self.heroes2list(self.radiant.values):
-#             combined_teams.at[self.match_id, rad_hero] = 1
-#         for dire_hero in self.heroes2list(self.dire.values):
-#             combined_teams.at[self.match_id, dire_hero] = -1
-#         combined_teams.match_id = self.match_id
-#         combined_teams = combined_teams.fillna(0)
-#         return combined_teams
-    
-#     def heroes2list(self, heroes):
-#         heroes_list = str(heroes)
-#         heroes_list = heroes_list.replace('[', '').replace(']', '').replace("'", '').split(',')
-#         return heroes_list
-    
-#     def submit_data(self):
-#         '''
-#         Function that submits data into db
-#         '''
-#         try:
-#             logger.info(f'Connecting to db {self.db_name}')
-#             connection=sqlite3.connect(self.db_name)
-#             try:
-#                 logger.info(f'Submiting data to {self.db_table_hbym}')
-#                 self.combined_teams.to_sql(name=self.db_table_hbym, con=connection, if_exists='append', index=False)
-#             except:
-#                 logger.error(f'Submission to table {self.db_table_hbym} fail!')
-#             else:
-#                 logger.info(f'Submited data from match {self.match_id} into table {self.db_table_hbym} succesfully!')
-#         except:
-#             logger.error(f'Connection to {self.db_name} fail!') 
-            
-class utils():
-    
-    def heroes_pick_df(data, team):
+# class utils():
+
+    def heroes_pick_df(self, team):
         if team == 'radiant':
                 team = 1
         elif team == 'dire':
                 team = -1
         ### get total number of matches by rank
         total_matches = {}
-        df = data.heroes_data[['id', 'localized_name']]
+        df = self.heroes_data[['id', 'localized_name']]
         df = df.set_index('id')
-        for rank in data.dota_ranks.keys():
+        for rank in self.dota_ranks.keys():
             ### count total matches
-            total_matches[rank] = data.match_data.loc[data.match_data['dota rank'] == rank].shape[0]
+            total_matches[rank] = self.match_data.loc[self.match_data['dota rank'] == rank].shape[0]
             ### empty column by rank
             df[rank] = 0
-        for hero_id in data.heroes_data['id']:
+        for hero_id in self.heroes_data['id']:
             hero_id = str(hero_id)
             ### identify matches where hero apear in either both or radiant/dire teams
             if team == 'both':
-                heroe_matches_id = list(data.hbym_data.loc[data.hbym_data[hero_id] != 0, 'match_id'])
+                heroe_matches_id = list(self.hbym_data.loc[self.hbym_data[hero_id] != 0, 'match_id'])
             else:
-                heroe_matches_id = list(data.hbym_data.loc[data.hbym_data[hero_id] == team, 'match_id'])
+                heroe_matches_id = list(self.hbym_data.loc[self.hbym_data[hero_id] == team, 'match_id'])
             ### extract data from matches with the heroe in each team
-            heroe_matches_data = data.match_data[data.match_data['match_id'].isin(heroe_matches_id)]
+            heroe_matches_data = self.match_data[self.match_data['match_id'].isin(heroe_matches_id)]
             ### iterate by rank levels
-            for rank in data.dota_ranks.keys():
+            for rank in self.dota_ranks.keys():
                 if heroe_matches_data.loc[heroe_matches_data['dota rank'] == rank].shape[0] > 0:
                     hero_count = heroe_matches_data.loc[heroe_matches_data['dota rank'] == rank].shape[0]/total_matches[rank]*100
                 else:
@@ -126,18 +85,18 @@ class utils():
                 df.at[int(hero_id), rank] = hero_count
         return df
             
-    def heroes_wlr_by_rank(data):
-        df = data.heroes_data[['id', 'localized_name']]
+    def heroes_wlr_by_rank(self):
+        df = self.heroes_data[['id', 'localized_name']]
         df = df.set_index('id')
-        for rank in data.dota_ranks.keys():
+        for rank in self.dota_ranks.keys():
             ### empty column by rank
             df[rank] = 0
-        for hero_id in data.heroes_data['id']:
+        for hero_id in self.heroes_data['id']:
             hero_id = str(hero_id)
             ### identify matches where hero apear in either both or radiant/dire teams
-            heroe_matches_id = data.hbym_data.loc[data.hbym_data[hero_id] != 0, ['match_id', hero_id]]
+            heroe_matches_id = self.hbym_data.loc[self.hbym_data[hero_id] != 0, ['match_id', hero_id]]
             ### extract data from matches with the heroe in any team
-            heroe_matches_data = data.match_data.loc[data.match_data['match_id'].isin(list(heroe_matches_id['match_id']))]
+            heroe_matches_data = self.match_data.loc[self.match_data['match_id'].isin(list(heroe_matches_id['match_id']))]
             heroe_matches_data = heroe_matches_data.merge(heroe_matches_id, how='left', on='match_id')
             ### add column to indicate if the heroe team wins
             heroe_matches_data['team_with_hero_win'] = 0
@@ -145,7 +104,7 @@ class utils():
             heroe_matches_data.loc[(heroe_matches_data['radiant_win'] == 0) & (heroe_matches_data[hero_id] == -1), 'team_with_hero_win'] = 1
             # print(f'Total matches with hero {hero_id}: {heroe_matches_data.shape[0]}')
             ### iterate by rank levels
-            for rank in data.dota_ranks.keys():
+            for rank in self.dota_ranks.keys():
                 matches_data_rank = heroe_matches_data.loc[heroe_matches_data['dota rank'] == rank]
                 # print(f'matches with hero {hero_id} in rank {rank}: {matches_data_rank.shape[0]}')
                 # print(f'matches with hero {hero_id} in rank {rank} which are wins: {matches_data_rank.loc[matches_data_rank["team_with_hero_win"] == 1].shape[0]}')
@@ -159,5 +118,40 @@ class utils():
                 df.at[int(hero_id), rank] = wlr
                 # print(f'the wlr of the hero {hero_id} for the rank {rank} is: {wlr}')
         return df
+    
 
+    def combine_teams(self, enemy):
+        ### extract df's
+        radiant_view = self.hbym_data.copy()
+        dire_view = self.hbym_data.copy()
+        if enemy == True:
+            ### for radiant
+            ### keep dire in radiant df
+            ### keep radiant as main team
+            ### for dire
+            dire_view.replace(1, -1, inplace=True)   ### change radiant to enemy
+            dire_view.replace(-1, 1, inplace=True)   ### change dire -> main team
+            
+        else:
+            ### for radiant
+            radiant_view.replace(-1, 0, inplace=True)   ### remove dire from  radiant df
+            ### keep radiant as main team
+            ### for dire
+            dire_view.replace(1, 0, inplace=True)   ### remove radiant from dire df
+            dire_view.replace(-1, 1, inplace=True)   ### change dire -> main team
+        ### for radiant
+        radiant_view = self.match_data.copy().merge(radiant_view, how='left', on='match_id')
+        radiant_view['Tean name'] = 'Radiant'
+        radiant_view['Team win'] = radiant_view['radiant_win']  ### add new column AND add radiant wins
+        ### for dire
+        dire_view = self.match_data.copy().merge(dire_view, how='left', on='match_id')
+        dire_view['Tean name'] = 'Dire'
+        dire_view['Team win'] = 0; dire_view.loc[dire_view['radiant_win'] == 0, 'Team win'] = 1    ### add new column AND add dire wins
+
+        combined = pd.concat([radiant_view, dire_view])
+        # combined.drop(columns=['match_seq_num', 'start_time', 'avg_mmr', 'num_mmr', 
+        #                         'lobby_type', 'game_mode', 'avg_rank_tier', 'num_rank_tier',
+        #                         'cluster', 'radiant_team', 'dire_team',], inplace=True)
+        
+        return combined
 

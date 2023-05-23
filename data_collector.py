@@ -8,12 +8,13 @@ import pandas as pd
 
 from utils.data_collector_utils import DataCollector, TeamsData
 from utils.dota_data_utils import DotaData 
+
 def main():
     data_colector_options = args['data_collector']
     if data_colector_options['collect_data'] == 'True':
         logger.info(f'Collecting Dota 2 data')
         logger.info(f'Starting service')
-        matches = DataCollector(**args['matchs_api'])
+        matches = DataCollector(**data_colector_options)
         matches.stored_matches = matches.get_matches_db()
         starttime = submittime = time.time()
         logger.info(f'Start time: {starttime}')
@@ -26,15 +27,15 @@ def main():
             if (time.time() - starttime) > matches.api_get_uptime:
                 break
             matches.new_data = matches.receive_matches()
-            matches.stored_matches = matches.stored_matches + list(matches.new_data.match_id.values) 
-            # if (time.time() - submittime) > matches.db_sumbmission_time:
+            matches.stored_matches = matches.stored_matches + list(matches.new_data['match_id'].values) 
             if matches.new_data.shape[0] > 0:
                 matches.submit_data()
                 matches.new_data = pd.DataFrame()
-            #     submittime = time.time()
+            else:
+                logger.info(f'No new data received from API {matches.api_name}')
     if data_colector_options['update_data'] == 'True':  
         logger.info(f'Updating Dota 2 data')  
-        data = DotaData(**args['matchs_api'])
+        data = DotaData(**args['dota_data'])
         stored_hbym = data.hbym_data_stored_matches
         stored_match = data.match_data_stored_matches
         if stored_match > stored_hbym:
@@ -55,10 +56,9 @@ def main():
         else:
             logger.info(f'all records from {data.db_match_table} are stored in {data.db_heroesbymatch_table}')
 
-
 if __name__ == '__main__':
     ### define logger
-    lg.basicConfig(filename='logs/data_collector.log', filemode='w',
+    lg.basicConfig(filename='logs/data_collector.log', filemode='a',
                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=lg.INFO)
     logger = lg.getLogger()
     stdout_handler = lg.StreamHandler(sys.stdout)

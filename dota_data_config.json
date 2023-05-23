@@ -4,27 +4,25 @@
             "update_data":"True",
             "api_name":"publicMatches",
             "api_url":"https://api.opendota.com/api/publicMatches",
-            "api_get_wait_time":5,
-            "api_get_uptime":20,
+            "api_get_wait_time":300,
+            "api_get_uptime":18000,
             "db_name":"dota_db.sqlite",
-            "db_table_name":"publicMatches",
-            "db_sumbmission_time":600
+            "db_match_table":"publicMatches"
     },
-    "matchs_api":{
+    "dota_data":{
             "db_name":"dota_db.sqlite",
             "db_match_table":"publicMatches",
             "db_heroes_table":"heroes",
             "db_heroesbymatch_table":"heroesbymatch",
             "dota_ranks":{
-                "01 Herald ranks":[0, 769], 
-                "02 Guardian ranks":[770, 1539 ],
-                "03 Crusader ranks":[1540, 2309], 
-                "04 Archon ranks":[2310, 3079], 
-                "05 Legend ranks":[3080, 3849], 
-                "06 Ancient ranks":[3850, 4619], 
-                "07 Divine ranks":[4620, 5420], 
-                "08 Immortal ranks":[5421, 6000] 
+                "01 Herald rank":  [   0, 1072], 
+                "02 Guardian rank":[1073, 2145],
+                "03 Crusader rank":[2146, 3218], 
+                "04 Archon rank":  [3219, 4291], 
+                "05 Legend rank":  [4292, 5364], 
+                "06 Ancient rank": [5365, 6437], 
+                "07 Divine rank":  [6438, 7510], 
+                "08 Immortal rank":[7511, 9000] 
             }
-
     }
 }

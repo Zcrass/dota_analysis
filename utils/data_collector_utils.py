@@ -22,14 +22,14 @@ class DataCollector():
             connection = sqlite3.connect(self.db_name)
             logger.info(f'Connection to db {self.db_name} succesfull')    
             try:
-                logger.info(f'Retrieving data from table {self.db_table_name}')
-                stored_data = pd.read_sql(f'SELECT * FROM {self.db_table_name}', connection)
+                logger.info(f'Retrieving data from table {self.db_match_table}')
+                stored_data = pd.read_sql(f'SELECT * FROM {self.db_match_table}', connection)
                 logger.info(f'Connection to table {self.db_name} succesfull')
                 # connection.close()
-                logger.info(f'Received {stored_data.shape[0]} records of data from {self.db_table_name} table')
-                return list(stored_data.match_id.values)
+                logger.info(f'Received {stored_data.shape[0]} records of data from {self.db_match_table} table')
+                return list(stored_data['match_id'].values)
             except:
-                logger.error(f'Connection to table {self.db_table_name} fail!')                
+                logger.error(f'Connection to table {self.db_match_table} fail!')                
         except:
             logger.error(f'Connection to database {self.db_name} fail!')
             
@@ -57,12 +57,12 @@ class DataCollector():
             logger.info(f'Connecting to db {self.db_name}')
             connection=sqlite3.connect(self.db_name)
             try:
-                logger.info(f'Submiting data to {self.db_table_name}')
-                self.new_data.to_sql(name=self.db_table_name, con=connection, if_exists='append', index=False)
+                logger.info(f'Submiting data to {self.db_match_table}')
+                self.new_data.to_sql(name=self.db_match_table, con=connection, if_exists='append', index=False)
             except:
-                logger.error(f'Submission to table {self.db_table_name} fail!')
+                logger.error(f'Submission to table {self.db_match_table} fail!')
             else:
-                logger.info(f'Submited {self.new_data.shape[0]} into table {self.db_table_name} succesfully!')
+                logger.info(f'Submited {self.new_data.shape[0]} into table {self.db_match_table} succesfully!')
         except:
             logger.error(f'Connection to {self.db_name} fail!') 
             
