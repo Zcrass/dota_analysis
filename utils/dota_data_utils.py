@@ -1,7 +1,9 @@
 import json
 import logging as lg
+import numpy as np
 import pandas as pd 
 import sqlite3
+import itertools
 
 logger = lg.getLogger(__name__)
 class DotaData():
@@ -51,8 +53,6 @@ class DotaData():
             df.loc[df['match_id'].isin(rank_matches), 'dota rank'] = r
         return df['dota rank']
     
-# class utils():
-
     def heroes_pick_df(self, team):
         if team == 'radiant':
                 team = 1
@@ -118,7 +118,6 @@ class DotaData():
                 df.at[int(hero_id), rank] = wlr
                 # print(f'the wlr of the hero {hero_id} for the rank {rank} is: {wlr}')
         return df
-    
 
     def combine_teams(self, enemy):
         ### extract df's
@@ -141,11 +140,11 @@ class DotaData():
             dire_view.replace(-1, 1, inplace=True)   ### change dire -> main team
         ### for radiant
         radiant_view = self.match_data.copy().merge(radiant_view, how='left', on='match_id')
-        radiant_view['Tean name'] = 'Radiant'
+        radiant_view['Team name'] = 'Radiant'
         radiant_view['Team win'] = radiant_view['radiant_win']  ### add new column AND add radiant wins
         ### for dire
         dire_view = self.match_data.copy().merge(dire_view, how='left', on='match_id')
-        dire_view['Tean name'] = 'Dire'
+        dire_view['Team name'] = 'Dire'
         dire_view['Team win'] = 0; dire_view.loc[dire_view['radiant_win'] == 0, 'Team win'] = 1    ### add new column AND add dire wins
 
         combined = pd.concat([radiant_view, dire_view])
@@ -154,4 +153,44 @@ class DotaData():
         #                         'cluster', 'radiant_team', 'dire_team',], inplace=True)
         
         return combined
+    
+    def get_heroes_combinations(self, max_heroes, store, file):    
+        teams = self.combine_teams(enemy=False)
+        teams.replace(0, np.nan, inplace=True)
+        combinations_df = pd.DataFrame()
 
+        heroes_names = self.heroes_data['id']
+        hero_combinations = []
+        for L in range(len(heroes_names) + 1):
+            for subset in itertools.combinations(heroes_names, L):
+                if len(subset) > max_heroes:
+                    break
+                else:
+                    hero_combinations.append(list(subset))
+
+        combinations_df['combined_ids'] = hero_combinations[1:]
+        combinations_df['counts'] = 0
+        combinations_df['wins'] = 0
+        combinations_df['win_rate'] = 0
+        combinations_df['match_id_list'] = np.nan
+        for comb in combinations_df['combined_ids']:
+            comb_list = list(str(x) for x in comb)
+            comb_list.append('match_id')
+            comb_list.append('Team win')
+            comb_team_maches = teams[comb_list].copy()
+            comb_team_maches['Team win'].replace(np.nan, 0, inplace=True)
+            comb_team_maches.dropna(inplace=True)
+            wins = comb_team_maches.loc[comb_team_maches['Team win'] == 1].shape[0]
+            combinations_df.loc[combinations_df['combined_ids'].astype(str) == str(comb),
+                                'counts'] = comb_team_maches.shape[0]
+            combinations_df.loc[combinations_df['combined_ids'].astype(str) == str(comb),
+                                'wins'] = wins
+            combinations_df.loc[combinations_df['combined_ids'].astype(str) == str(comb),
+                                'win_rate'] = wins/comb_team_maches.shape[0]*100
+            combinations_df.loc[combinations_df['combined_ids'].astype(str) == str(comb), 
+                                'match_id_list'] = str(list(comb_team_maches['match_id']))
+            print(f'hero combination {comb} has found {comb_team_maches.shape[0]} matches with {wins} wins')
+
+        if store:
+            combinations_df.to_csv(file)
+        return combinations_df
