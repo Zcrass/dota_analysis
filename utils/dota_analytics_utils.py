@@ -5,7 +5,7 @@ from sklearn.feature_selection import RFE
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, mean_squared_error, classification_report
 from sklearn.model_selection import train_test_split
-from sklearn.svm import LinearSVR, SVC, LinearSVC
+from sklearn.svm import LinearSVC
 
 
 import statsmodels.api as sm ### check if activate all this 
@@ -20,19 +20,8 @@ class DotaPredictionModels():
         data_x = data_x
         self.selected_features = data_x.columns
 
-    # def select_method(self):
-    #     if self.method == 'logistic':
-    #         model = LogisticRegression()
-    #     elif self.method == 'forest':
-    #         model =  RandomForestRegressor(n_estimators = 1000, criterion = "absolute_error",
-    #                                        max_depth = None, oob_score = False, max_features = 5,
-    #                                        n_jobs = -1, bootstrap=True)
-    #     elif self.method == 'svm':
-    #         model = LinearSVR()
-    #     return model
-
     def rec_feat_elim(self, feat2keep):
-        # print('Reducing number of features')
+        print('Reducing number of features')
         rfe = RFE(LogisticRegression(), n_features_to_select=feat2keep)
         rfe = rfe.fit(self.data_x.to_numpy(), self.data_y)
         self.select_features = self.data_x.columns[rfe.support_]
@@ -40,7 +29,7 @@ class DotaPredictionModels():
         return self
 
     def hero_significanceself(self):
-        # print('calculating features significance')
+        print('calculating features significance')
         logit_model=sm.GLM(self.data_y, self.data_x)
         result=logit_model.fit()
         self.select_features = self.data_x.columns[result.pvalues < 0.05]
@@ -68,7 +57,6 @@ class DotaPredictionModels():
 
         elif method == 'svm':
             print('fitting Linear Support Vector Classificator')
-            # self.model = LinearSVR()
             self.model = LinearSVC()
             # self.model = SVC()
             self.model.fit(self.X_train, self.y_train)
